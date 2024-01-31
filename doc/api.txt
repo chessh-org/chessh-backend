@@ -51,6 +51,7 @@ Part 2: Constants
     0x02  black wins
     0x03  forced draw
     0x04  internal server error
+    0x05  your turn
 
 Part 3: Data structures
 ---
@@ -128,4 +129,9 @@ Part 4: Commands
 
       NOTIFY [BYTE CODE] - Notifies a client of an event
 
-  The client and server just send each other commands until the game ends.
+Part 5: Exchange
+---
+  The server will occasionally send a "NOTIFY your turn" message. The client can
+  send whatever requests it would like, but MUST eventually send a MAKE_MOVE
+  command. Once that command is executed, the server will not respond to any
+  commands until another "NOTIFY your turn" message is sent.
