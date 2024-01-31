@@ -70,6 +70,8 @@ struct frontend *new_curses_frontend(wchar_t **piecesyms_white, wchar_t **pieces
 	noecho();
 	curs_set(0);
 	keypad(win, TRUE);
+	mousemask(ALL_MOUSE_EVENTS, NULL);
+	mouseinterval(0);
 
 	ret->get_move = get_move;
 	ret->report_msg = report_msg;
