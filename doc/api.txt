@@ -9,8 +9,11 @@ The chessh api
 
 Part 1: Transport
 ---
-  The chessh API runs on TCP port 1475. All structures are represented in
-  network-byte order (big-endian).
+  The chessh API runs over a reliable 8-bit byte stream. All structures are
+  represented in network-byte order (big-endian).
+
+  This 8 bit byte stream can be accessed using a double-pipe to the
+  chessh-client program, or through TCP port 1475.
 
 Part 2: Constants
 ---

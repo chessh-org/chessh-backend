@@ -29,6 +29,7 @@ struct client_args {
 	char *dir;
 	char *user;
 	char *pass;
+	bool be_interactive;
 
 	int perft;
 	char *start_pos;
@@ -56,7 +57,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	return run_client(sock_fd, true);
+	return run_client(sock_fd, args.be_interactive);
 }
 
 static void parse_args(int argc, char *argv[], struct client_args *ret) {
@@ -64,9 +65,10 @@ static void parse_args(int argc, char *argv[], struct client_args *ret) {
 	ret->perft = -1;
 	ret->start_pos = ret->start_sequence = NULL;
 	ret->autotest = false;
+	ret->be_interactive = true;
 
 	for (;;) {
-		int opt = getopt(argc, argv, "hld:u:p:t:i:s:a");
+		int opt = getopt(argc, argv, "hld:u:p:t:i:s:am");
 		switch (opt) {
 		case -1:
 			goto got_args;
@@ -97,6 +99,9 @@ static void parse_args(int argc, char *argv[], struct client_args *ret) {
 		case 'a':
 			ret->autotest = true;
 			break;
+		case 'm':
+			ret->be_interactive = false;
+			break;
 		default:
 			print_help(argv[0]);
 			exit(EXIT_FAILURE);
@@ -123,6 +128,7 @@ static void print_help(char *progname) {
 	       "  -t [level]: Run a perft test with [level] levels\n"
 	       "  -i [start]: Use [start] as the starting position for the perft test\n"
 	       "  -s [sequence]: Run [sequence] before beginning the perft test\n"
-	       "  -a: Produce a test output suitable for automatic testing with perftree\n",
+	       "  -a: Produce a test output suitable for automatic testing with perftree\n"
+	       "  -m: Machine mode, communicate through the chessh API\n",
 	       progname);
 }
