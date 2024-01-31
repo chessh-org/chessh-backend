@@ -18,6 +18,8 @@
 #ifndef HAVE_CLIENT__FRONTEND
 #define HAVE_CLIENT__FRONTEND
 
+#include <stddef.h>
+
 #include <client/chess.h>
 
 struct frontend {
@@ -28,7 +30,7 @@ struct frontend {
 	 * move. Another call to `get_move` will be made after `report_error`. */
 	void (*report_error)(void *aux, int code);
 
-	void (*report_msg)(void *aux, char *msg);
+	void (*report_msg)(void *aux, int msg_code);
 	void (*display_board)(void *aux, struct game *game, enum player player);
 	void (*free)(struct frontend *this);
 	void *aux;
@@ -36,5 +38,16 @@ struct frontend {
 
 extern struct frontend *new_curses_frontend(wchar_t **piecesyms_white, wchar_t **piecesyms_black);
 extern struct frontend *new_text_frontend(wchar_t **piecesyms_white, wchar_t **piecesyms_black);
+extern struct frontend *new_api_frontend(void);
+extern char *frontend_strerror(int code);
+
+#define MSG_UNKNOWN_ERROR -1
+#define MSG_WAITING_FOR_OP 0
+#define MSG_WHITE_WIN 1
+#define MSG_BLACK_WIN 2
+#define MSG_FORCED_DRAW 3
+#define MSG_IO_ERROR 4
+#define MSG_WAITING_FOR_MOVE 5
+#define MSG_ILLEGAL_MOVE 6
 
 #endif

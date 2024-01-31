@@ -83,7 +83,7 @@ int run_client(int sock_fd) {
 	ssize_t pidlen;
 	struct game *game;
 	struct frontend *frontend;
-	char *end_msg;
+	int end_msg;
 
 	setlocale(LC_ALL, "C.utf8");
 
@@ -125,7 +125,7 @@ int run_client(int sock_fd) {
 		return 1;
 	}
 
-	frontend->report_msg(frontend->aux, "Waiting for an opponent");
+	frontend->report_msg(frontend->aux, MSG_WAITING_FOR_OP);
 
 	for (;;) {
 		if ((recvlen = recvfds(sock_fd, fds, sizeof fds / sizeof *fds, &pid, sizeof pid, &pidlen)) < 2 ||
@@ -150,26 +150,26 @@ int run_client(int sock_fd) {
 			move_code = get_player_move(frontend, game, fds[1]);
 		}
 		else {
-			frontend->report_msg(frontend->aux, "Waiting on opponent's move");
+			frontend->report_msg(frontend->aux, MSG_WAITING_FOR_OP);
 			move_code = parse_op_move(game, fds[0]);
 		}
 
 		switch (move_code) {
 		case WHITE_WIN:
-			end_msg = "White wins!";
+			end_msg = MSG_WHITE_WIN;
 			goto end;
 		case BLACK_WIN:
-			end_msg = "Black wins!";
+			end_msg = MSG_BLACK_WIN;
 			goto end;
 		case FORCED_DRAW:
-			end_msg = "It's a draw!";
+			end_msg = MSG_FORCED_DRAW;
 			goto end;
 		case IO_ERROR:
-			end_msg = "I/O error";
+			end_msg = MSG_IO_ERROR;
 			goto end;
 		}
 		if (move_code < 0) {
-			end_msg = "An unknown error has occured, ending game";
+			end_msg = MSG_UNKNOWN_ERROR;
 			goto end;
 		}
 
@@ -230,7 +230,7 @@ static int parse_op_move(struct game *game, int fd) {
 static int get_player_move(struct frontend *frontend, struct game *game, int peer) {
 	char *move;
 	int move_code;
-	frontend->report_msg(frontend->aux, "Make your move");
+	frontend->report_msg(frontend->aux, MSG_WAITING_FOR_MOVE);
 	for (;;) {
 		move = frontend->get_move(frontend->aux, get_player(game));
 		if (move == NULL) {
@@ -239,7 +239,7 @@ static int get_player_move(struct frontend *frontend, struct game *game, int pee
 		move_code = parse_move(game, move);
 		switch (move_code) {
 		case ILLEGAL_MOVE:
-			frontend->report_msg(frontend->aux, "Illegal move!");
+			frontend->report_msg(frontend->aux, MSG_ILLEGAL_MOVE);
 			free(move);
 			continue;
 		case MISSING_PROMOTION:

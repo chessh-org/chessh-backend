@@ -45,7 +45,7 @@ struct aux {
 static char *get_move(void *aux, enum player player);
 static void select_square(int *r_ret, int *c_ret, enum player player);
 static void report_error(void *aux, int code);
-static void report_msg(void *aux, char *msg);
+static void report_msg(void *aux, int msg_code);
 static void draw_piece(struct aux *aux, struct game *game, int row, int col);
 static void display_board(void *aux, struct game *game, enum player player);
 static void show_credit();
@@ -174,8 +174,8 @@ static void report_error(void *aux, int code) {
 	}
 }
 
-static void report_msg(void *aux, char *msg) {
-	drawmsg((struct aux *) aux, msg);
+static void report_msg(void *aux, int msg_code) {
+	drawmsg((struct aux *) aux, frontend_strerror(msg_code));
 	show_credit();
 }
 

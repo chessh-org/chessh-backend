@@ -37,9 +37,6 @@ int run_daemon(int sockfd) {
 		struct sockaddr_un addr;
 		socklen_t addrlen;
 
-		memset(&addr, 0, sizeof addr);
-		addrlen = 0;
-
 		if (random() % 2 == 0) {
 			id1 = 0;
 			id2 = 1;
