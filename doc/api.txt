@@ -1,0 +1,128 @@
+The chessh api
+===
+
+  chessh is portable by design. That means that we have to create a ridiculously
+  simple API that makes it as easy as possible to write a frontend. The API
+  tries to make it easier for low-powered hardware to play chess, so we design a
+  custom protocol using TCP that doesn't rely on high-level networking functions
+  like HTTP.
+
+Part 1: Transport
+---
+  The chessh API runs on TCP port 1475. All structures are represented in
+  network-byte order (big-endian).
+
+Part 2: Constants
+---
+  Every piece is assigned an ID, from 0-7.
+
+    ID    PIECE TYPE
+    ----------------
+    0     queen
+    1     rook
+    2     bishop
+    3     knight
+    4     pawn
+    5     king
+    6     empty
+
+  Commands are a single byte represented with the following table:
+  
+    BYTE  COMMAND
+    -------------
+    0x00  LOGIN
+    0x01  MAKE_MOVE
+    0x02  GET_BOARD
+    0x03  GET_VALID_MOVES
+    0x04  INIT_GAME
+    0x05  BOARD_INFO
+    0x06  MOVE_INFO
+    0x07  NOTIFY
+
+  Notifications can be one of the following values
+  
+    BYTE  MEANING
+    -------------
+    0x00  draw offer
+    0x01  white wins
+    0x02  black wins
+    0x03  forced draw
+    0x04  internal server error
+
+Part 3: Data structures
+---
+  A position is a 6 bit structure that looks like this:
+
+        0  1  2  3  4  5 
+      +--+--+--+--+--+--+
+      |  rank  |  file  |
+      |        |        |
+      +--+--+--+--+--+--+
+
+    3 bits for the rank, 3 bits for the file. These values are stored as rows and
+    columns from white's perspective, rank 0 over the wire is rank 8 on the board,
+    and file 0 over the wire is file a on the board.
+
+  Moves look like this:
+
+                                      1  1  1  1  1  1
+        0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+      +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+      | start position  |HP|P |  end position   |prom-|
+      |                 |  |  |                 |otion|
+      +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+    The first 6 bits describe the initial position of the piece.
+    The next bit is set to 1 if this move contains a promotion
+    The next bit is set to 0 if the piece is owned by white, and 1 if the piece
+    is owned by black.
+    The next 6 bits describe the final position of the piece
+    The next 2 bits describe the promotion of this piece, or are set to 0 if
+    there isn't one.
+
+  The board is represented as 64 4 bit half-bytes, going in reading order from
+  white's perspective.
+
+                                      1  1  1  1  1  1
+        0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+      +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+      |piece 1 id |piece 2 id |piece 3 id |piece 4 id |
+      |piece 5 id |piece 6 id |piece 7 id |piece 8 id |
+         ...
+      |piece 60 id|piece 61 id|piece 62 id|piece 63 id|
+      +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+  A string contains a byte for the length of the string, followed by that many
+  characters representing the string itself. Strings are unencoded.
+
+  A byte is an 8 bit unsigned integer
+
+  A word is a 16 bit unsigned integer
+
+Part 4: Commands
+---
+  A command contains a single byte for the id of the command and several
+  arguments. A list of valid commands follows:
+
+      LOGIN [STRING USERNAME] [STRING PASSWORD] - Authenticates the user, MUST
+      be the first command run by the client
+
+      MAKE_MOVE [MOVE MOVE] -
+        When received by server - Sends that move to the opponent
+        When received by a client - Executes that move on screen.
+     
+      GET_BOARD - Requests the server for the current board
+
+      GET_VALID_MOVES - Requests the server for a list of valid moves
+
+      INIT_GAME [BYTE PLAYER] - Begins a game, MUST NOT be sent by the client.
+      If PLAYER is 0, then the client is playing as white. Else, black.
+
+      BOARD_INFO [BOARD BOARD] - Informs a client of the current board state.
+
+      MOVE_INFO [WORD MOVE_COUNT] [MOVE MOVE_1] [MOVE MOVE_2] ... - Informs the
+      client of valid moves
+
+      NOTIFY [BYTE CODE] - Notifies a client of an event
+
+  The client and server just send each other commands until the game ends.
