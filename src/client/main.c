@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	return run_client(sock_fd);
+	return run_client(sock_fd, true);
 }
 
 static void parse_args(int argc, char *argv[], struct client_args *ret) {

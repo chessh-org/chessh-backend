@@ -33,9 +33,7 @@
 static bool ask_user(char *prompt, bool def_answer);
 static int parse_op_move(struct game *game, int fd);
 static int get_player_move(struct frontend *frontend, struct game *game, int peer);
-
-static wchar_t **piecesyms_white;
-static wchar_t **piecesyms_black;
+static struct frontend *ask_for_frontend(void);
 
 /* I know these technically aren't emoji, but I don't care. */
 static wchar_t *emojisyms_white[] = {
@@ -75,7 +73,7 @@ static wchar_t *portsyms_black[] = {
 	[EMPTY]  = L"  ",
 };
 
-int run_client(int sock_fd) {
+int run_client(int sock_fd, bool is_interactive) {
 	int fds[2];
 	int pid;
 	enum player player;
@@ -85,40 +83,11 @@ int run_client(int sock_fd) {
 	struct frontend *frontend;
 	int end_msg;
 
-	setlocale(LC_ALL, "C.utf8");
-
-	puts("Believe it or not, plaintext isn't actually that portable. I have to ask some questions:");
-	printf("%ls\n", L"\u265a ");
-	if (ask_user("Do you see a king symbol above this line?", true)) {
-		piecesyms_white = emojisyms_white;
-		piecesyms_black = emojisyms_black;
-		/* This varies based on your terminal's background color */
-		if (!ask_user("Does that king symbol look white?", true)) {
-			wchar_t **backup = piecesyms_white;
-			piecesyms_white = piecesyms_black;
-			piecesyms_black = backup;
-		}
+	if (is_interactive) {
+		frontend = ask_for_frontend();
 	}
 	else {
-		piecesyms_white = portsyms_white;
-		piecesyms_black = portsyms_black;
-	}
-
-	frontend = NULL;
-	if (ask_user("Can you use ncurses? (If you don't know what this means, say 'y')", true)) {
-		/* the transparent "white" unicode chars for chess pieces don't
-		 * look right on colored backgrounds. Instead, it's easier to
-		 * just use filled in "black" chars and change the foreground
-		 * color. */
-		if (piecesyms_white == emojisyms_white || piecesyms_white == emojisyms_black) {
-			frontend = new_curses_frontend(emojisyms_white, emojisyms_white);
-		}
-		else {
-			frontend = new_curses_frontend(piecesyms_white, piecesyms_black);
-		}
-	}
-	else {
-		frontend = new_text_frontend(piecesyms_white, piecesyms_black);
+		frontend = new_api_frontend();
 	}
 	if (frontend == NULL) {
 		puts("Failed to initialize frontend, quitting");
@@ -255,4 +224,48 @@ static int get_player_move(struct frontend *frontend, struct game *game, int pee
 	}
 	free(move);
 	return move_code;
+}
+
+static struct frontend *ask_for_frontend(void) {
+	struct frontend *frontend;
+	wchar_t **piecesyms_white;
+	wchar_t **piecesyms_black;
+
+	setlocale(LC_ALL, "C.utf8");
+
+	puts("Believe it or not, plaintext isn't actually that portable. I have to ask some questions:");
+	printf("%ls\n", L"\u265a ");
+	if (ask_user("Do you see a king symbol above this line?", true)) {
+		piecesyms_white = emojisyms_white;
+		piecesyms_black = emojisyms_black;
+		/* This varies based on your terminal's background color */
+		if (!ask_user("Does that king symbol look white?", true)) {
+			wchar_t **backup = piecesyms_white;
+			piecesyms_white = piecesyms_black;
+			piecesyms_black = backup;
+		}
+	}
+	else {
+		piecesyms_white = portsyms_white;
+		piecesyms_black = portsyms_black;
+	}
+
+	frontend = NULL;
+	if (ask_user("Can you use ncurses? (If you don't know what this means, say 'y')", true)) {
+		/* the transparent "white" unicode chars for chess pieces don't
+		 * look right on colored backgrounds. Instead, it's easier to
+		 * just use filled in "black" chars and change the foreground
+		 * color. */
+		if (piecesyms_white == emojisyms_white || piecesyms_white == emojisyms_black) {
+			frontend = new_curses_frontend(emojisyms_white, emojisyms_white);
+		}
+		else {
+			frontend = new_curses_frontend(piecesyms_white, piecesyms_black);
+		}
+	}
+	else {
+		frontend = new_text_frontend(piecesyms_white, piecesyms_black);
+	}
+
+	return frontend;
 }

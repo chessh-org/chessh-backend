@@ -15,27 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
-#include <locale.h>
-
 #include <client/frontend.h>
 
-char *frontend_strerror(int code) {
-	switch (code) {
-	case MSG_WAITING_FOR_OP:
-		return "Waiting on opponent's move";
-	case MSG_WHITE_WIN:
-		return "White wins!";
-	case MSG_BLACK_WIN:
-		return "Black wins!";
-	case MSG_FORCED_DRAW:
-		return "It's a draw!";
-	case IO_ERROR:
-		return "I/O error";
-	case MSG_WAITING_FOR_MOVE:
-		return "Make your move";
-	case MSG_ILLEGAL_MOVE:
-		return "Illegal move!";
-	case MSG_UNKNOWN_ERROR: default:
-		return "An unknown error has occured";
-	}
+struct frontend *new_api_frontend(void) {
+	return NULL;
 }
