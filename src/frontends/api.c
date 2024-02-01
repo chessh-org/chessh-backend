@@ -11,7 +11,7 @@
 
 static void start_client(int clientfd);
 
-static int read_string(char *dst, char *src);
+static int read_string(char *dst, int fd);
 
 int main() {
 	int sockfd, opt;
@@ -62,11 +62,8 @@ int main() {
 }
 
 static void start_client(int clientfd) {
-	char buff[1024];
 	pid_t pid;
-	ssize_t len;
-	char user[256], pass[256], *ptr;
-	int bufflen;
+	char user[256], pass[256];
 
 	switch (pid = fork()) {
 	case -1:
@@ -79,19 +76,12 @@ static void start_client(int clientfd) {
 		return;
 	}
 
-	len = read(clientfd, buff, sizeof buff);
-	if (len < 0) {
+	if (read_string(user, clientfd) ||
+	    read_string(pass, clientfd)) {
 		exit(EXIT_FAILURE);
 	}
-	ptr = buff;
-	if ((bufflen = read_string(user, ptr)) > len) {
-		exit(EXIT_FAILURE);
-	}
-	ptr += bufflen;
-	len -= bufflen;
-	if ((bufflen = read_string(pass, ptr)) > len) {
-		exit(EXIT_FAILURE);
-	}
+
+	printf("%s:%s\n", user, pass);
 
 	dup2(clientfd, 0);
 	dup2(clientfd, 1);
@@ -101,9 +91,25 @@ static void start_client(int clientfd) {
 	exit(EXIT_FAILURE);
 }
 
-static int read_string(char *dst, char *src) {
-	unsigned char len = (unsigned char) src[0];
-	memcpy(dst, src+1, len);
+static int read_string(char *dst, int fd) {
+	unsigned char len;
+	if (read(fd, &len, sizeof len) < (ssize_t) sizeof len) {
+		return -1;
+	}
+
 	dst[len] = '\0';
-	return len+1;
+
+	while (len > 0) {
+		ssize_t this_read;
+		this_read = read(fd, dst, len);
+		if (this_read < 0) {
+			if (errno != EINTR && errno != EAGAIN) {
+				return -1;
+			}
+			continue;
+		}
+		len -= this_read;
+	}
+
+	return 0;
 }
