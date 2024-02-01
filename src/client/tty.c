@@ -37,7 +37,7 @@ struct aux {
 	wchar_t **piecesyms_black;
 };
 
-static char *get_move(void *aux, enum player player);
+static char *get_move(void *aux, struct game *game, enum player player);
 static void report_error(void *aux, int code);
 static void report_msg(void *aux, int msg);
 static void print_letters(enum player player);
@@ -65,9 +65,10 @@ struct frontend *new_text_frontend(wchar_t **piecesyms_white, wchar_t **piecesym
 	return ret;
 }
 
-static char *get_move(void *aux, enum player player) {
+static char *get_move(void *aux, struct game *game, enum player player) {
 	char *move;
 	UNUSED(aux);
+	UNUSED(game);
 	UNUSED(player);
 	move = readline("Your move: ");
 	if (move == NULL) {

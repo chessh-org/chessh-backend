@@ -35,6 +35,10 @@ char *frontend_strerror(int code) {
 		return "Make your move";
 	case MSG_ILLEGAL_MOVE:
 		return "Illegal move!";
+	case MSG_FOUND_OP_WHITE:
+		return "Found an opponent! Playing as white";
+	case MSG_FOUND_OP_BLACK:
+		return "Found an opponent! Playing as black";
 	case MSG_UNKNOWN_ERROR: default:
 		return "An unknown error has occured";
 	}

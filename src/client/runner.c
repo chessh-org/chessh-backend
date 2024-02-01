@@ -107,7 +107,11 @@ int run_client(int sock_fd, bool is_interactive) {
 		}
 		break;
 	}
+
 	player = pid == 0 ? WHITE : BLACK;
+
+	frontend->report_msg(frontend->aux, player == WHITE ?
+			MSG_FOUND_OP_WHITE: MSG_FOUND_OP_BLACK);
 
 	game = new_game();
 
@@ -201,7 +205,7 @@ static int get_player_move(struct frontend *frontend, struct game *game, int pee
 	int move_code;
 	frontend->report_msg(frontend->aux, MSG_WAITING_FOR_MOVE);
 	for (;;) {
-		move = frontend->get_move(frontend->aux, get_player(game));
+		move = frontend->get_move(frontend->aux, game, get_player(game));
 		if (move == NULL) {
 			return IO_ERROR;
 		}

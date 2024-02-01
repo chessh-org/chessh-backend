@@ -23,7 +23,7 @@
 #include <client/chess.h>
 
 struct frontend {
-	char *(*get_move)(void *aux, enum player player);
+	char *(*get_move)(void *aux, struct game *game, enum player player);
 
 	/* Used for things that the frontend can fix, currently only used when a
 	 * pawn is missing a promotion. The error always refers to the last
@@ -49,5 +49,7 @@ extern char *frontend_strerror(int code);
 #define MSG_IO_ERROR 4
 #define MSG_WAITING_FOR_MOVE 5
 #define MSG_ILLEGAL_MOVE 6
+#define MSG_FOUND_OP_WHITE 7
+#define MSG_FOUND_OP_BLACK 8
 
 #endif

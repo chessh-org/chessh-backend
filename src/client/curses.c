@@ -42,7 +42,7 @@ struct aux {
 
 #define CREDIT "made by nate choe <nate@natechoe.dev>, https://github.com/natechoe1/chessh"
 
-static char *get_move(void *aux, enum player player);
+static char *get_move(void *aux, struct game *game, enum player player);
 static void select_square(int *r_ret, int *c_ret, enum player player);
 static void report_error(void *aux, int code);
 static void report_msg(void *aux, int msg_code);
@@ -97,9 +97,12 @@ struct frontend *new_curses_frontend(wchar_t **piecesyms_white, wchar_t **pieces
 	return ret;
 }
 
-static char *get_move(void *aux, enum player player) {
+static char *get_move(void *aux, struct game *game, enum player player) {
 	struct aux *aux_decomposed = (struct aux *) aux;
 	struct move *move;
+
+	UNUSED(game);
+
 	move = &aux_decomposed->move;
 	if (move->promotion != EMPTY) {
 		goto end;

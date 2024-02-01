@@ -13,7 +13,8 @@ Part 1: Transport
   represented in network-byte order (big-endian).
 
   This 8 bit byte stream can be accessed using a double-pipe to the
-  chessh-client program, or through TCP port 1475.
+  chessh-client program, or through TCP port 1475. If a double-pipe is used,
+  then the LOGIN command is unnecessary.
 
 Part 2: Constants
 ---
@@ -21,12 +22,12 @@ Part 2: Constants
 
     ID    PIECE TYPE
     ----------------
-    0     queen
-    1     rook
+    0     rook
+    1     knight
     2     bishop
-    3     knight
-    4     pawn
-    5     king
+    3     queen
+    4     king
+    5     pawn
     6     empty
 
   Commands are a single byte represented with the following table:
@@ -52,6 +53,8 @@ Part 2: Constants
     0x03  forced draw
     0x04  internal server error
     0x05  your turn
+    0x06  illegal move
+    0x07  move needs a promotion
 
 Part 3: Data structures
 ---
@@ -72,29 +75,24 @@ Part 3: Data structures
                                       1  1  1  1  1  1
         0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
       +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-      | start position  |HP|P |  end position   |prom-|
+      | start position  |HP|R |  end position   |prom-|
       |                 |  |  |                 |otion|
       +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
     The first 6 bits describe the initial position of the piece.
     The next bit is set to 1 if this move contains a promotion
-    The next bit is set to 0 if the piece is owned by white, and 1 if the piece
-    is owned by black.
+    The next bit is set unused
     The next 6 bits describe the final position of the piece
     The next 2 bits describe the promotion of this piece, or are set to 0 if
     there isn't one.
 
   The board is represented as 64 4 bit half-bytes, going in reading order from
-  white's perspective.
+  white's perspective and the high bit set to the player id
 
-                                      1  1  1  1  1  1
-        0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-      +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-      |piece 1 id |piece 2 id |piece 3 id |piece 4 id |
-      |piece 5 id |piece 6 id |piece 7 id |piece 8 id |
-         ...
-      |piece 60 id|piece 61 id|piece 62 id|piece 63 id|
-      +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+       0      1      2      3
+      +------+------+------+------+
+      |player|piece id            |
+      +------+------+------+------+
 
   A string contains a byte for the length of the string, followed by that many
   characters representing the string itself. Strings are unencoded.
@@ -109,7 +107,7 @@ Part 4: Commands
   arguments. A list of valid commands follows:
 
       LOGIN [STRING USERNAME] [STRING PASSWORD] - Authenticates the user, MUST
-      be the first command run by the client
+      be the first command run by the client if connecting through TCP.
 
       MAKE_MOVE [MOVE MOVE] -
         When received by server - Sends that move to the opponent
@@ -131,7 +129,11 @@ Part 4: Commands
 
 Part 5: Exchange
 ---
-  The server will occasionally send a "NOTIFY your turn" message. The client can
-  send whatever requests it would like, but MUST eventually send a MAKE_MOVE
-  command. Once that command is executed, the server will not respond to any
-  commands until another "NOTIFY your turn" message is sent.
+  The client initiates a connection by running the LOGIN command (if connecting
+  through TCP and not through a double pipe). The client then waits for an
+  INIT_GAME command to begin the game.
+
+  The server will occasionally send a "NOTIFY" message. When that happens, the
+  client can do whatever it wants with the server until it sends the "MAKE_MOVE"
+  command. After that, the server will wait for some unspecified amount of time
+  before sending another "NOTIFY" message.
