@@ -46,6 +46,7 @@ static char *get_move(void *aux, struct game *game, enum player player);
 static void select_square(int *r_ret, int *c_ret, enum player player);
 static void report_error(void *aux, int code);
 static void report_msg(void *aux, int msg_code);
+static void report_event(int code, void *aux, struct game *game, void *data);
 static void draw_piece(struct aux *aux, struct game *game, int row, int col);
 static void display_board(void *aux, struct game *game, enum player player);
 static void show_credit();
@@ -76,6 +77,7 @@ struct frontend *new_curses_frontend(wchar_t **piecesyms_white, wchar_t **pieces
 	ret->get_move = get_move;
 	ret->report_msg = report_msg;
 	ret->report_error = report_error;
+	ret->report_event = report_event;
 	ret->display_board = display_board;
 	ret->free = free_frontend;
 	ret->aux = aux;
@@ -180,6 +182,16 @@ static void report_error(void *aux, int code) {
 static void report_msg(void *aux, int msg_code) {
 	drawmsg((struct aux *) aux, frontend_strerror(msg_code));
 	show_credit();
+}
+
+/* no-op */
+static void report_event(int code, void *aux, struct game *game, void *data) {
+	UNUSED(code);
+	UNUSED(aux);
+	UNUSED(game);
+	UNUSED(data);
+
+	return;
 }
 
 static void draw_piece(struct aux *aux, struct game *game, int row, int col) {

@@ -51,6 +51,7 @@
 
 static char *get_move(void *aux, struct game *game, enum player player);
 static void report_error(void *aux, int code);
+static void report_event(void *aux, struct game *game, void *data);
 static void report_msg(void *aux, int msg_code);
 static void display_board(void *aux, struct game *game, enum player player);
 static int api_get_move();
@@ -69,15 +70,14 @@ static inline int get_code(struct game *game, int r, int c) {
 }
 
 struct frontend *new_api_frontend(void) {
-	struct frontend *ret;
-
 	if ((ret = malloc(sizeof *ret)) == NULL) {
 		return NULL;
 	}
 
 	ret->get_move = get_move;
-	ret->report_msg = report_msg;
 	ret->report_error = report_error;
+	ret->report_msg = report_msg;
+	ret->report_event = report_event;
 	ret->display_board = display_board;
 	ret->free = (void (*)(struct frontend *)) free;
 	ret->aux = NULL;
@@ -95,6 +95,7 @@ static char *get_move(void *aux, struct game *game, enum player player) {
 	for (;;) {
 		int cmd;
 		cmd = getchar();
+		fprintf(stderr, "%d\n", cmd);
 		switch (cmd) {
 		case CMD_MAKE_MOVE:
 			if (api_get_move(&move) < 0) {
@@ -104,12 +105,18 @@ static char *get_move(void *aux, struct game *game, enum player player) {
 		case CMD_GET_BOARD:
 			putchar(CMD_BOARD_INFO);
 			api_send_board(game);
+			fflush(stdout);
 			break;
 		case CMD_GET_VALID_MOVES:
 			putchar(CMD_MOVE_INFO);
+			/* TODO: Make this more efficient, we're counting every
+			 * possible move twice here, I don't like that. */
 			putword(count_valid_moves(game));
 			api_send_valid_moves(game);
+			fflush(stdout);
 			break;
+		default:
+			return NULL;
 		}
 	}
 
@@ -121,6 +128,14 @@ got_move:
 static void report_error(void *aux, int code) {
 	UNUSED(aux);
 	UNUSED(code);
+}
+
+static void report_event(int code, void *aux, struct game *game, void *data) {
+	UNUSED(aux);
+
+	switch (code) {
+
+	}
 }
 
 static void report_msg(void *aux, int msg_code) {
@@ -150,10 +165,12 @@ static void report_msg(void *aux, int msg_code) {
 	case MSG_FOUND_OP_WHITE:
 		putchar(CMD_INIT_GAME);
 		putchar(0);
+		fflush(stdout);
 		break;
 	case MSG_FOUND_OP_BLACK:
 		putchar(CMD_INIT_GAME);
 		putchar(1);
+		fflush(stdout);
 		break;
 	}
 }

@@ -29,8 +29,9 @@ struct frontend {
 	 * pawn is missing a promotion. The error always refers to the last
 	 * move. Another call to `get_move` will be made after `report_error`. */
 	void (*report_error)(void *aux, int code);
-
+	
 	void (*report_msg)(void *aux, int msg_code);
+	void (*report_event)(int code, void *aux, struct game *game, void *data);
 	void (*display_board)(void *aux, struct game *game, enum player player);
 	void (*free)(struct frontend *this);
 	void *aux;
@@ -51,5 +52,7 @@ extern char *frontend_strerror(int code);
 #define MSG_ILLEGAL_MOVE 6
 #define MSG_FOUND_OP_WHITE 7
 #define MSG_FOUND_OP_BLACK 8
+
+#define EVENT_OP_MOVE 0
 
 #endif

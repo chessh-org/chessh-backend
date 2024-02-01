@@ -40,6 +40,7 @@ struct aux {
 static char *get_move(void *aux, struct game *game, enum player player);
 static void report_error(void *aux, int code);
 static void report_msg(void *aux, int msg);
+static void report_event(int code, void *aux, struct game *game, void *data);
 static void print_letters(enum player player);
 static void display_board(void *aux, struct game *game, enum player player);
 static void free_frontend(struct frontend *this);
@@ -92,6 +93,16 @@ static void report_error(void *aux, int code) {
 static void report_msg(void *aux, int msg_code) {
 	UNUSED(aux);
 	puts(frontend_strerror(msg_code));
+}
+
+/* no-op */
+static void report_event(int code, void *aux, struct game *game, void *data) {
+	UNUSED(code);
+	UNUSED(aux);
+	UNUSED(game);
+	UNUSED(data);
+
+	return;
 }
 
 static void print_letters(enum player player) {
