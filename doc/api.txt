@@ -80,7 +80,8 @@ Part 3: Data structures
       +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
     The first 6 bits describe the initial position of the piece.
-    The next bit is set to 1 if this move contains a promotion
+    The next bit is set to 1 if this move contains a promotion (always unset
+    when the server is speaking to the client)
     The next bit is set unused
     The next 6 bits describe the final position of the piece
     The next 2 bits describe the promotion of this piece, or are set to 0 if
@@ -93,6 +94,8 @@ Part 3: Data structures
       +------+------+------+------+
       |player|piece id            |
       +------+------+------+------+
+
+  Player 0 is white, player 1 is black.
 
   A string contains a byte for the length of the string, followed by that many
   characters representing the string itself. Strings are unencoded.
