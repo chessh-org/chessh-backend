@@ -134,10 +134,13 @@ static void report_error(void *aux, int code) {
 
 static void report_event(int code, void *aux, struct game *game, void *data) {
 	UNUSED(aux);
-
-	UNUSED(code);
 	UNUSED(game);
-	UNUSED(data);
+
+	switch (code) {
+	case EVENT_OP_MOVE:
+		print_move((struct move *) data);
+		break;
+	}
 }
 
 static void report_msg(void *aux, int msg_code) {
