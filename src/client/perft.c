@@ -80,11 +80,13 @@ static int run_sequence(struct game *game, char *sequence) {
 	for (int i = 0; sequence[i] != '\0'; ++i) {
 		char buff[10];
 		int j;
+		struct move move;
 		for (j = 0; sequence[i+j] != ' ' && sequence[i+j] != '\0' && j < (ssize_t) sizeof buff-1; ++j) {
 			buff[j] = sequence[i+j];
 		}
 		buff[j] = '\0';
-		if (parse_move(game, buff) < 0) {
+		if (parse_move(&move, buff) < 0 ||
+		    make_move(game, &move) < 0) {
 			return 1;
 		}
 		i += j;

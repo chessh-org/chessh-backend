@@ -58,6 +58,7 @@ struct frontend *new_text_frontend(wchar_t **piecesyms_white, wchar_t **piecesym
 	ret->get_move      = get_move;
 	ret->report_error  = report_error;
 	ret->report_msg    = report_msg;
+	ret->report_event  = report_event;
 	ret->display_board = display_board;
 	ret->free          = free_frontend;
 	ret->aux           = aux;

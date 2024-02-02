@@ -776,23 +776,24 @@ static int parse_int(char *s, int start, int *end) {
 	return ret;
 }
 
-int parse_move(struct game *game, char *move) {
-	struct move move_s;
+int parse_move(struct move *ret, char *move) {
 	if (strlen(move) < 4) {
 		return ILLEGAL_MOVE;
 	}
-	move_s.c_i = tolower(move[0]) - 'a';
-	move_s.r_i = 8 - (move[1] - '0');
-	move_s.c_f = tolower(move[2]) - 'a';
-	move_s.r_f = 8 - (move[3] - '0');
-	move_s.promotion = EMPTY;
+	ret->c_i = tolower(move[0]) - 'a';
+	ret->r_i = 8 - (move[1] - '0');
+	ret->c_f = tolower(move[2]) - 'a';
+	ret->r_f = 8 - (move[3] - '0');
+	ret->promotion = EMPTY;
 	switch (tolower(move[4])) {
-	case 'n': move_s.promotion = KNIGHT; break;
-	case 'q': move_s.promotion = QUEEN;  break;
-	case 'r': move_s.promotion = ROOK;   break;
-	case 'b': move_s.promotion = BISHOP; break;
+	case 'n': ret->promotion = KNIGHT; break;
+	case 'q': ret->promotion = QUEEN;  break;
+	case 'r': ret->promotion = ROOK;   break;
+	case 'b': ret->promotion = BISHOP; break;
+	case '\0': break;
+	default: return ILLEGAL_MOVE;
 	}
-	return make_move(game, &move_s);
+	return 0;
 }
 
 char *move_to_string(struct move *move) {

@@ -31,7 +31,7 @@
 #include <client/frontend.h>
 
 static bool ask_user(char *prompt, bool def_answer);
-static int parse_op_move(struct game *game, int fd);
+static int parse_op_move(struct frontend *frontend, struct game *game, int fd);
 static int get_player_move(struct frontend *frontend, struct game *game, int peer);
 static struct frontend *ask_for_frontend(void);
 
@@ -124,7 +124,7 @@ int run_client(int sock_fd, bool is_interactive) {
 		}
 		else {
 			frontend->report_msg(frontend->aux, MSG_WAITING_FOR_OP);
-			move_code = parse_op_move(game, fds[0]);
+			move_code = parse_op_move(frontend, game, fds[0]);
 		}
 
 		switch (move_code) {
@@ -184,49 +184,58 @@ static bool ask_user(char *prompt, bool def_answer) {
 	}
 }
 
-static int parse_op_move(struct game *game, int fd) {
+static int parse_op_move(struct frontend *frontend, struct game *game, int fd) {
 	char buff[1024];
 	int code;
 	ssize_t read_len;
+	struct move move;
 	if ((read_len = read(fd, buff, sizeof buff)) < 5) {
 		return IO_ERROR;
 	}
 	if (buff[read_len-1] != '\0') {
 		return IO_ERROR;
 	}
-	if ((code = parse_move(game, buff))) {
+	if ((code = parse_move(&move, buff)) < 0 ||
+	    (code = make_move(game, &move)) < 0) {
 		return code;
 	}
+	frontend->report_event(EVENT_OP_MOVE, frontend->aux, game, &move);
 	return 0;
 }
 
 static int get_player_move(struct frontend *frontend, struct game *game, int peer) {
-	char *move;
+	char *move_text;
 	int move_code;
+	struct move move;
+	ssize_t move_text_len;
 	frontend->report_msg(frontend->aux, MSG_WAITING_FOR_MOVE);
 	for (;;) {
-		move = frontend->get_move(frontend->aux, game, get_player(game));
-		if (move == NULL) {
+		move_text = frontend->get_move(frontend->aux, game, get_player(game));
+		if (move_text == NULL) {
 			return IO_ERROR;
 		}
-		move_code = parse_move(game, move);
+		if ((move_code = parse_move(&move, move_text)) < 0 ||
+		    (move_code = make_move(game, &move)) < 0) {
+			return move_code;
+		}
 		switch (move_code) {
 		case ILLEGAL_MOVE:
 			frontend->report_msg(frontend->aux, MSG_ILLEGAL_MOVE);
-			free(move);
+			free(move_text);
 			continue;
 		case MISSING_PROMOTION:
 			frontend->report_error(frontend->aux, MISSING_PROMOTION);
-			free(move);
+			free(move_text);
 			continue;
 		}
 		break;
 	}
-	if (write(peer, move, strlen(move)+1) < 5) {
-		free(move);
+	move_text_len = (ssize_t) strlen(move_text)+1;
+	if (write(peer, move_text, move_text_len) < move_text_len) {
+		free(move_text);
 		return IO_ERROR;
 	}
-	free(move);
+	free(move_text);
 	return move_code;
 }
 

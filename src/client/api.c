@@ -51,7 +51,7 @@
 
 static char *get_move(void *aux, struct game *game, enum player player);
 static void report_error(void *aux, int code);
-static void report_event(void *aux, struct game *game, void *data);
+static void report_event(int code, void *aux, struct game *game, void *data);
 static void report_msg(void *aux, int msg_code);
 static void display_board(void *aux, struct game *game, enum player player);
 static int api_get_move();
@@ -70,6 +70,8 @@ static inline int get_code(struct game *game, int r, int c) {
 }
 
 struct frontend *new_api_frontend(void) {
+	struct frontend *ret;
+
 	if ((ret = malloc(sizeof *ret)) == NULL) {
 		return NULL;
 	}
@@ -133,9 +135,9 @@ static void report_error(void *aux, int code) {
 static void report_event(int code, void *aux, struct game *game, void *data) {
 	UNUSED(aux);
 
-	switch (code) {
-
-	}
+	UNUSED(code);
+	UNUSED(game);
+	UNUSED(data);
 }
 
 static void report_msg(void *aux, int msg_code) {
