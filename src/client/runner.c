@@ -25,6 +25,7 @@
 
 #include <readline/readline.h>
 
+#include <legal.h>
 #include <copyfd.h>
 #include <client/chess.h>
 #include <client/runner.h>
@@ -246,6 +247,9 @@ static struct frontend *ask_for_frontend(void) {
 	wchar_t **piecesyms_black;
 
 	setlocale(LC_ALL, "C.utf8");
+
+	print_legal();
+	putchar('\n');
 
 	puts("Believe it or not, plaintext isn't actually that portable. I have to ask some questions:");
 	printf("%ls\n", L"\u265a ");
