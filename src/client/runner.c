@@ -206,7 +206,6 @@ static int parse_op_move(struct frontend *frontend, struct game *game, int fd) {
 	    (code = make_move(game, &move)) < 0) {
 		return code;
 	}
-	fputs("Reporting op mode\n", stderr);
 	frontend->report_event(EVENT_OP_MOVE, frontend->aux, game, &move);
 	return 0;
 }

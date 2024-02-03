@@ -94,13 +94,10 @@ static char *get_move(void *aux, struct game *game, enum player player) {
 	UNUSED(aux);
 	UNUSED(player);
 
-	fputs("TEST\n", stderr);
-
 	NOTIFY(your_turn);
 	for (;;) {
 		int cmd;
 		cmd = getchar();
-		fprintf(stderr, "%d\n", cmd);
 		switch (cmd) {
 		case CMD_MAKE_MOVE:
 			if (api_get_move(&move) < 0) {
@@ -141,6 +138,7 @@ static void report_event(int code, void *aux, struct game *game, void *data) {
 
 	switch (code) {
 	case EVENT_OP_MOVE:
+		putchar(CMD_MOVE_INFO);
 		print_move((struct move *) data);
 		break;
 	}
