@@ -38,6 +38,7 @@
 	do { \
 		putchar(0x07); \
 		putchar(code); \
+		fflush(stdout); \
 	} while (0)
 
 #define CMD_LOGIN 0x00
@@ -93,6 +94,8 @@ static char *get_move(void *aux, struct game *game, enum player player) {
 	UNUSED(aux);
 	UNUSED(player);
 
+	fputs("TEST\n", stderr);
+
 	NOTIFY(your_turn);
 	for (;;) {
 		int cmd;
@@ -138,7 +141,6 @@ static void report_event(int code, void *aux, struct game *game, void *data) {
 
 	switch (code) {
 	case EVENT_OP_MOVE:
-		fputs("TEST\n", stderr);
 		print_move((struct move *) data);
 		break;
 	}
@@ -217,6 +219,7 @@ static void api_send_board(struct game *game) {
 			putchar(code);
 		}
 	}
+	fflush(stdout);
 }
 
 static int count_valid_moves(struct game *game) {
@@ -268,6 +271,7 @@ static void print_move_if_valid(struct game *game,
 static void print_move(struct move *move) {
 	putchar(move->r_i << 5 | move->c_i << 2);
 	putchar(move->r_f << 5 | move->c_f << 2);
+	fflush(stdout);
 }
 
 static bool move_is_valid(struct game *game, struct move *move) {
