@@ -18,6 +18,6 @@
 #ifndef HAVE_CLIENT__RUNNER
 #define HAVE_CLIENT__RUNNER
 
-extern int run_client(int sock_fd, bool is_interactive);
+extern int run_client(char *sock_path, bool is_interactive);
 
 #endif

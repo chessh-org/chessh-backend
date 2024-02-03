@@ -27,6 +27,7 @@
 
 #include <legal.h>
 #include <copyfd.h>
+#include <client/sock.h>
 #include <client/chess.h>
 #include <client/runner.h>
 #include <client/frontend.h>
@@ -74,7 +75,7 @@ static wchar_t *portsyms_black[] = {
 	[EMPTY]  = L"  ",
 };
 
-int run_client(int sock_fd, bool is_interactive) {
+int run_client(char *sock_path, bool is_interactive) {
 	int fds[2];
 	int pid;
 	enum player player;
@@ -83,6 +84,7 @@ int run_client(int sock_fd, bool is_interactive) {
 	struct game *game;
 	struct frontend *frontend;
 	int end_msg;
+	int sock_fd;
 
 	if (is_interactive) {
 		frontend = ask_for_frontend();
@@ -96,6 +98,10 @@ int run_client(int sock_fd, bool is_interactive) {
 	}
 
 	frontend->report_msg(frontend->aux, MSG_WAITING_FOR_OP);
+
+	if ((sock_fd = unix_connect(sock_path)) < 0) {
+		return 1;
+	}
 
 	for (;;) {
 		if ((recvlen = recvfds(sock_fd, fds, sizeof fds / sizeof *fds, &pid, sizeof pid, &pidlen)) < 2 ||
@@ -124,7 +130,7 @@ int run_client(int sock_fd, bool is_interactive) {
 			move_code = get_player_move(frontend, game, fds[1]);
 		}
 		else {
-			frontend->report_msg(frontend->aux, MSG_WAITING_FOR_OP);
+			frontend->report_msg(frontend->aux, MSG_WAITING_FOR_OP_MOVE);
 			move_code = parse_op_move(frontend, game, fds[0]);
 		}
 

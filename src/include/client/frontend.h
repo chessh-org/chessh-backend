@@ -49,9 +49,10 @@ extern char *frontend_strerror(int code);
 #define MSG_FORCED_DRAW 3
 #define MSG_IO_ERROR 4
 #define MSG_WAITING_FOR_MOVE 5
-#define MSG_ILLEGAL_MOVE 6
-#define MSG_FOUND_OP_WHITE 7
-#define MSG_FOUND_OP_BLACK 8
+#define MSG_WAITING_FOR_OP_MOVE 6
+#define MSG_ILLEGAL_MOVE 7
+#define MSG_FOUND_OP_WHITE 8
+#define MSG_FOUND_OP_BLACK 9
 
 #define EVENT_OP_MOVE 0
 

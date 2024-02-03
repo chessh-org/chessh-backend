@@ -21,7 +21,6 @@
 #include <getopt.h>
 
 #include <legal.h>
-#include <client/sock.h>
 #include <client/perft.h>
 #include <client/runner.h>
 
@@ -43,7 +42,6 @@ static void print_help(char *progname);
 int main(int argc, char *argv[]) {
 	struct client_args args;
 	char sock_path[4096];
-	int sock_fd;
 
 	parse_args(argc, argv, &args);
 
@@ -53,11 +51,8 @@ int main(int argc, char *argv[]) {
 
 	snprintf(sock_path, sizeof sock_path, "%s/matchmaker", args.dir);
 	sock_path[sizeof sock_path - 1] = '\0';
-	if ((sock_fd = unix_connect(sock_path)) < 0) {
-		return 1;
-	}
 
-	return run_client(sock_fd, args.be_interactive);
+	return run_client(sock_path, args.be_interactive);
 }
 
 static void parse_args(int argc, char *argv[], struct client_args *ret) {

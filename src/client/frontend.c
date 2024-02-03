@@ -22,7 +22,7 @@
 char *frontend_strerror(int code) {
 	switch (code) {
 	case MSG_WAITING_FOR_OP:
-		return "Waiting on opponent's move";
+		return "Waiting for an opponent";
 	case MSG_WHITE_WIN:
 		return "White wins!";
 	case MSG_BLACK_WIN:
@@ -33,6 +33,8 @@ char *frontend_strerror(int code) {
 		return "I/O error";
 	case MSG_WAITING_FOR_MOVE:
 		return "Make your move";
+	case MSG_WAITING_FOR_OP_MOVE:
+		return "Waiting on opponent's move";
 	case MSG_ILLEGAL_MOVE:
 		return "Illegal move!";
 	case MSG_FOUND_OP_WHITE:
