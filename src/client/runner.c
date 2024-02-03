@@ -221,8 +221,10 @@ static int get_player_move(struct frontend *frontend, struct game *game, int pee
 		if (move_text == NULL) {
 			return IO_ERROR;
 		}
-		if ((move_code = parse_move(&move, move_text)) < 0 ||
-		    (move_code = make_move(game, &move)) < 0) {
+		if (((move_code = parse_move(&move, move_text)) < 0 ||
+		     (move_code = make_move(game, &move)) < 0) &&
+		     (move_code != ILLEGAL_MOVE &&
+		      move_code != MISSING_PROMOTION)) {
 			return move_code;
 		}
 		switch (move_code) {
