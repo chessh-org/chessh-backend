@@ -252,7 +252,6 @@ static void show_credit() {
 static void free_frontend(struct frontend *this) {
 	struct aux *aux_decomposed = (struct aux *) this->aux;
 	endwin();
-	free(aux_decomposed->msg);
 	free(aux_decomposed);
 	free(this);
 }

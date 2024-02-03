@@ -57,11 +57,9 @@ static void report_msg(void *aux, int msg_code);
 static void display_board(void *aux, struct game *game, enum player player);
 static int api_get_move();
 static void api_send_board(struct game *game);
-static int count_valid_moves(struct game *game);
-static void api_send_valid_moves(struct game *game);
-static void print_move_if_valid(struct game *game,
-		int r_i, int c_i, int r_f, int c_f);
+static int count_valid_moves(struct game *game, char *buff, int buff_size);
 static void print_move(struct move *move);
+static void write_move(char buff[2], struct move *move);
 static bool move_is_valid(struct game *game, struct move *move);
 static void putword(uint16_t word);
 
@@ -97,6 +95,8 @@ static char *get_move(void *aux, struct game *game, enum player player) {
 	NOTIFY(your_turn);
 	for (;;) {
 		int cmd;
+		char move_buff[1024];
+		int move_count;
 		cmd = getchar();
 		switch (cmd) {
 		case CMD_MAKE_MOVE:
@@ -111,10 +111,9 @@ static char *get_move(void *aux, struct game *game, enum player player) {
 			break;
 		case CMD_GET_VALID_MOVES:
 			putchar(CMD_MOVE_INFO);
-			/* TODO: Make this more efficient, we're counting every
-			 * possible move twice here, I don't like that. */
-			putword(count_valid_moves(game));
-			api_send_valid_moves(game);
+			move_count = count_valid_moves(game, move_buff, sizeof move_buff);
+			putword(move_count);
+			fwrite(move_buff, move_count * 2, 1, stdout);
 			fflush(stdout);
 			break;
 		default:
@@ -220,7 +219,7 @@ static void api_send_board(struct game *game) {
 	fflush(stdout);
 }
 
-static int count_valid_moves(struct game *game) {
+static int count_valid_moves(struct game *game, char *buff, int buff_size) {
 	int ret = 0;
 	for (int r_i = 0; r_i < 8; ++r_i) {
 		for (int c_i = 0; c_i < 8; ++c_i) {
@@ -232,44 +231,30 @@ static int count_valid_moves(struct game *game) {
 					move.r_f = r_f;
 					move.c_f = c_f;
 					if (move_is_valid(game, &move)) {
+						if (ret * 2 >= buff_size) {
+							goto end;
+						}
+						write_move(buff + ret*2, &move);
 						++ret;
 					}
 				}
 			}
 		}
 	}
+end:
 	return ret;
 }
 
-static void api_send_valid_moves(struct game *game) {
-	for (int r_i = 0; r_i < 8; ++r_i) {
-		for (int c_i = 0; c_i < 8; ++c_i) {
-			for (int r_f = 0; r_f < 8; ++r_f) {
-				for (int c_f = 0; c_f < 8; ++c_f) {
-					print_move_if_valid(game, r_i, c_i, r_f, c_f);
-				}
-			}
-		}
-	}
-}
-
-static void print_move_if_valid(struct game *game,
-		int r_i, int c_i, int r_f, int c_f) {
-	struct move move;
-	move.r_i = r_i;
-	move.c_i = c_i;
-	move.r_f = r_f;
-	move.c_f = c_f;
-	move.promotion = QUEEN;
-	if (move_is_valid(game, &move)) {
-		print_move(&move);
-	}
-}
-
 static void print_move(struct move *move) {
-	putchar(move->r_i << 5 | move->c_i << 2);
-	putchar(move->r_f << 5 | move->c_f << 2);
+	char buff[2];
+	write_move(buff, move);
+	fwrite(buff, sizeof buff, 1, stdout);
 	fflush(stdout);
+}
+
+static void write_move(char buff[2], struct move *move) {
+	buff[0] = (char) (move->r_i << 5 | move->c_i << 2);
+	buff[1] = (char) (move->r_f << 5 | move->c_f << 2);
 }
 
 static bool move_is_valid(struct game *game, struct move *move) {
