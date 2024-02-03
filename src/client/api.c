@@ -138,6 +138,7 @@ static void report_event(int code, void *aux, struct game *game, void *data) {
 
 	switch (code) {
 	case EVENT_OP_MOVE:
+		fputs("TEST\n", stderr);
 		print_move((struct move *) data);
 		break;
 	}

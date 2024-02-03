@@ -15,7 +15,7 @@ LIBS_CLIENT = readline ncursesw
 
 LDFLAGS_SHARED =
 LDFLAGS_DAEMON =
-LDFLAGS_CLIENT =
+LDFLAGS_CLIENT = -lcrypt
 #LDFLAGS_SHARED += $(shell pkg-config --libs $(LIBS_SHARED))
 #LDFLAGS_DAEMON += $(shell pkg-config --libs $(LIBS_DAEMON))
 LDFLAGS_CLIENT += $(shell pkg-config --libs $(LIBS_CLIENT))
