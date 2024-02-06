@@ -13,6 +13,9 @@ Alternatively, you can use telnet
 Don't worry about the login, that doesn't affect anything for the moment. It may
 in a future update, though ;)
 
+This repository contains the ches.sh backend. It implements chess, some
+plaintext frontends, and the API.
+
 ## Technical stuff
 
 I'm using [perftree](https://github.com/agausmann/perftree) for debugging. This
