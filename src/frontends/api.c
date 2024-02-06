@@ -86,7 +86,7 @@ static void start_client(int clientfd) {
 	dup2(clientfd, 0);
 	dup2(clientfd, 1);
 	dup2(clientfd, 2);
-	execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server",
+	execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-m",
 			NULL);
 	exit(EXIT_FAILURE);
 }
