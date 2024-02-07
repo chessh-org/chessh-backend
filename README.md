@@ -16,7 +16,18 @@ in a future update, though ;)
 This repository contains the ches.sh backend. It implements chess, some
 plaintext frontends, and the API.
 
-## Technical stuff
+## Technical information
+
+This program is intended to work with Docker. It contains hardcoded file paths
+and port numbers for that reason. To run this program, just run
+
+    ./build.sh
+    docker compose up
+
+## Related projects
 
 I'm using [perftree](https://github.com/agausmann/perftree) for debugging. This
 project would have been absolutely impossible without it.
+
+I'm also using [Berkeley DB](https://en.wikipedia.org/wiki/Berkeley_DB) to
+manage users.

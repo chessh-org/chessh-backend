@@ -21,6 +21,7 @@
 #include <getopt.h>
 
 #include <legal.h>
+#include <client/users.h>
 #include <client/perft.h>
 #include <client/runner.h>
 
@@ -34,6 +35,8 @@ struct client_args {
 	char *start_pos;
 	char *start_sequence;
 	bool autotest;
+
+	bool register_user;
 };
 
 static void parse_args(int argc, char *argv[], struct client_args *ret);
@@ -49,6 +52,14 @@ int main(int argc, char *argv[]) {
 		return run_perft(args.perft, args.start_pos, args.start_sequence, args.autotest);
 	}
 
+	if (args.register_user) {
+		void *dbp;
+		if ((dbp = init_user_db()) == NULL) {
+			return 1;
+		}
+		return register_user(dbp, args.user, args.pass, args.be_interactive);
+	}
+
 	snprintf(sock_path, sizeof sock_path, "%s/matchmaker", args.dir);
 	sock_path[sizeof sock_path - 1] = '\0';
 
@@ -61,9 +72,10 @@ static void parse_args(int argc, char *argv[], struct client_args *ret) {
 	ret->start_pos = ret->start_sequence = NULL;
 	ret->autotest = false;
 	ret->be_interactive = true;
+	ret->register_user = false;
 
 	for (;;) {
-		int opt = getopt(argc, argv, "hld:u:p:t:i:s:am");
+		int opt = getopt(argc, argv, "hld:u:p:t:i:s:amr");
 		switch (opt) {
 		case -1:
 			goto got_args;
@@ -94,8 +106,8 @@ static void parse_args(int argc, char *argv[], struct client_args *ret) {
 		case 'a':
 			ret->autotest = true;
 			break;
-		case 'm':
-			ret->be_interactive = false;
+		case 'r':
+			ret->register_user = true;
 			break;
 		default:
 			print_help(argv[0]);
@@ -108,7 +120,8 @@ got_args:
 		return;
 	}
 
-	if (ret->dir == NULL || ret->user == NULL || ret->pass == NULL) {
+	if ((!ret->register_user && ret->dir == NULL) ||
+			ret->user == NULL || ret->pass == NULL) {
 		fprintf(stderr, "%s: missing required argument\n", argv[0]);
 		print_help(argv[0]);
 		exit(EXIT_FAILURE);
@@ -116,14 +129,14 @@ got_args:
 }
 
 static void print_help(char *progname) {
-	printf("Usage: %s -d [dir] -u [username] -p [password]\n"
-	       "OTHER FLAGS:\n"
-	       "  -h: Show this help and quit\n"
-	       "  -l: Show a legal notice and quit\n"
-	       "  -t [level]: Run a perft test with [level] levels\n"
-	       "  -i [start]: Use [start] as the starting position for the perft test\n"
-	       "  -s [sequence]: Run [sequence] before beginning the perft test\n"
-	       "  -a: Produce a test output suitable for automatic testing with perftree\n"
-	       "  -m: Machine mode, communicate through the chessh API\n",
-	       progname);
+	printf("Usage: %s -d [dir] -u [username] -p [password]\n", progname);
+	puts("OTHER FLAGS:");
+	puts("  -h: Show this help and quit");
+	puts("  -l: Show a legal notice and quit");
+	puts("  -t [level]: Run a perft test with [level] levels");
+	puts("  -i [start]: Use [start] as the starting position for the perft test");
+	puts("  -s [sequence]: Run [sequence] before beginning the perft test");
+	puts("  -a: Produce a test output suitable for automatic testing with perftree");
+	puts("  -m: Machine mode, communicate through the chessh API");
+	puts("  -r: Don't play chess, register this user instead");
 }

@@ -18,7 +18,7 @@ LDFLAGS_DAEMON =
 LDFLAGS_CLIENT = -lcrypt
 #LDFLAGS_SHARED += $(shell pkg-config --libs $(LIBS_SHARED))
 #LDFLAGS_DAEMON += $(shell pkg-config --libs $(LIBS_DAEMON))
-LDFLAGS_CLIENT += $(shell pkg-config --libs $(LIBS_CLIENT))
+LDFLAGS_CLIENT += $(shell pkg-config --libs $(LIBS_CLIENT)) -ldb
 
 CFLAGS_SHARED = -ggdb -O2 -pipe -Wall -Wpedantic -Wextra -Werror -Wint-conversion
 CFLAGS_DAEMON =
@@ -58,4 +58,11 @@ uninstall:
 	rm $(INSTALLDIR)/$(OUT_DAEMON)
 	rm $(INSTALLDIR)/$(OUT_CLIENT)
 
-.PHONY: all install uninstall
+clean:
+	rm $(OBJ_CLIENT)
+	rm $(OBJ_DAEMON)
+	rm $(OBJ_SHARED)
+	rm build/$(OUT_CLIENT)
+	rm build/$(OUT_DAEMON)
+
+.PHONY: all install uninstall clean

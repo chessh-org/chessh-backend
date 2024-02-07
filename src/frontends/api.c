@@ -9,6 +9,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#define LOGIN 0x00
+#define REGISTER 0x08
+#define REGISTER_RESPONSE 0x09
+
 static void start_client(int clientfd);
 
 static int read_string(char *dst, int fd);
@@ -64,6 +68,7 @@ int main() {
 static void start_client(int clientfd) {
 	pid_t pid;
 	char user[256], pass[256];
+	char cmd;
 
 	switch (pid = fork()) {
 	case -1:
@@ -76,18 +81,29 @@ static void start_client(int clientfd) {
 		return;
 	}
 
+	if (read(clientfd, &cmd, 1) < 1) {
+		return;
+	}
+
 	if (read_string(user, clientfd) ||
 	    read_string(pass, clientfd)) {
 		exit(EXIT_FAILURE);
 	}
 
-	printf("%s:%s\n", user, pass);
-
 	dup2(clientfd, 0);
 	dup2(clientfd, 1);
 	dup2(clientfd, 2);
-	execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-m",
-			NULL);
+
+	switch (cmd) {
+	case LOGIN:
+		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-m",
+				NULL);
+		break;
+	case REGISTER:
+		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-r",
+				NULL);
+		break;
+	}
 	exit(EXIT_FAILURE);
 }
 

@@ -31,7 +31,7 @@ Part 2: Constants
     6     empty
 
   Commands are a single byte represented with the following table:
-  
+
     BYTE  COMMAND
     -------------
     0x00  LOGIN
@@ -42,6 +42,8 @@ Part 2: Constants
     0x05  BOARD_INFO
     0x06  MOVE_INFO
     0x07  NOTIFY
+    0x08  REGISTER
+    0x09  REGISTER_RESPONSE
 
   Notifications can be one of the following values
   
@@ -55,6 +57,13 @@ Part 2: Constants
     0x05  your turn
     0x06  illegal move
     0x07  move needs a promotion
+
+  REGISTER_RESPONSE sends one of the following codes
+
+    BYTE  MEANING
+    -------------
+    0x00  Registration successful
+    0x01  Registration failed
 
 Part 3: Data structures
 ---
@@ -110,7 +119,7 @@ Part 4: Commands
   arguments. A list of valid commands follows:
 
       LOGIN [STRING USERNAME] [STRING PASSWORD] - Authenticates the user, MUST
-      be the first command run by the client if connecting through TCP.
+      be the first command run by the client.
 
       MAKE_MOVE [MOVE MOVE] -
         When received by server - Sends that move to the opponent
@@ -129,6 +138,13 @@ Part 4: Commands
       client of valid moves
 
       NOTIFY [BYTE CODE] - Notifies a client of an event
+
+      REGISTER [STRING USERNAME] [STRING PASSWORD] - Registers a new user, MUST
+      be the first command run by the client.
+
+      REGISTER_RESPONSE [BYTE CODE] [STRING RESPONSE] - Sent in response to a
+      REGISTER command. RESPONSE is a human-readable error that elaborates on
+      CODE.
 
 Part 5: Exchange
 ---
