@@ -2,9 +2,9 @@
 
 It's chess over ssh! In your terminal, just run
 
-    ssh guest@ches.sh
+    ssh chessh@ches.sh
 
-and use the password "guest" to play a game against another guest!
+and use the password "chessh" to play a game against another user!
 
 Alternatively, you can use telnet
 

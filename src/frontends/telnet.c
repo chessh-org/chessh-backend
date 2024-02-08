@@ -14,7 +14,7 @@ static void start_client(int clientfd);
 int main() {
 	int sockfd, opt;
 	struct sockaddr_in addr;
-	struct passwd *guest;
+	struct passwd *chessh;
 
 	signal(SIGCHLD, SIG_IGN);
 
@@ -38,13 +38,13 @@ int main() {
 		return 1;
 	}
 
-	guest = getpwnam("guest");
-	if (guest == NULL) {
-		fputs("Failed to find guest user\n", stderr);
+	chessh = getpwnam("chessh");
+	if (chessh == NULL) {
+		fputs("Failed to find chessh user\n", stderr);
 		return 1;
 	}
 	else {
-		if (seteuid(guest->pw_uid)) {
+		if (seteuid(chessh->pw_uid)) {
 			perror("seteuid() failed");
 			return 1;
 		}

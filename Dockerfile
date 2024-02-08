@@ -13,4 +13,4 @@ RUN chessh/docker-artifacts/build.sh
 
 VOLUME /chessh-data
 
-ENTRYPOINT /usr/bin/supervisord
+ENTRYPOINT /chessh/docker-artifacts/start.sh

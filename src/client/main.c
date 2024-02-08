@@ -106,6 +106,9 @@ static void parse_args(int argc, char *argv[], struct client_args *ret) {
 		case 'a':
 			ret->autotest = true;
 			break;
+		case 'm':
+			ret->be_interactive = false;
+			break;
 		case 'r':
 			ret->register_user = true;
 			break;

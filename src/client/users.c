@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include <util.h>
+#include <client/crypt.h>
 #include <client/users.h>
 
 #define USER 0x00
@@ -37,6 +38,7 @@ struct chessh_db {
 	DB *user_dbp;
 };
 
+/* XXX: Run memset(&user, 0, sizeof user) before inserting/getting */
 struct chessh_user {
 	char username[256]; /* NULL terminated */
 	char pass[88];      /* In /etc/shadow format */
@@ -44,6 +46,11 @@ struct chessh_user {
 };
 
 static int init_uuid(uuid *ret);
+
+static void report_msg(bool use_api, unsigned char code, char *elaboration);
+
+#define REGISTRATION_SUCCESSFUL 0x00
+#define REGISTRATION_FAILED 0x01
 
 void *init_user_db() {
 	struct chessh_db *ret;
@@ -86,20 +93,62 @@ error1:
 
 int register_user(void *dbp, char *user, char *pass, bool use_api) {
 	struct chessh_db *db;
-	DB_TXN *transaction;
-	UNUSED(user);
-	UNUSED(pass);
+	DBT key, value;
+	struct chessh_user new_user;
+	size_t user_len, pass_len;
+	char *pass_hashed;
+	int error_code;
+
 	UNUSED(use_api);
 
-	db = (struct chessh_db *) dbp;
-	if (db->env->txn_begin(db->env, NULL, &transaction, 0) != 0) {
-		goto error1;
+	user_len = strlen(user);
+
+	if (user_len > 0xff) {
+		report_msg(use_api, REGISTRATION_FAILED, "Username is too long (max len: 255)");
+		return -1;
 	}
 
-	return 0;
+	pass_hashed = crypt_salt(pass);
+	if (pass_hashed == NULL) {
+		report_msg(use_api, REGISTRATION_FAILED, "Failed to hash password");
+		return -1;
+	}
+	pass_len = strlen(pass_hashed);
+	if (pass_len + 1 >= sizeof new_user.pass) {
+		report_msg(use_api, REGISTRATION_FAILED, "Hashed password too long? (internal server error)");
+		return -1;
+	}
 
-error1:
-	return -1;
+	memset(&new_user, 0, sizeof new_user);
+	memcpy(new_user.username, user, user_len);
+	memcpy(new_user.pass, pass_hashed, pass_len + 1);
+
+	memset(&key, 0, sizeof key);
+	memset(&value, 0, sizeof value);
+	key.data = user;
+	key.size = user_len;
+	value.data = &new_user;
+	value.size = sizeof new_user;
+
+	db = (struct chessh_db *) dbp;
+
+	error_code = db->user_dbp->put(db->user_dbp, NULL, &key, &value, DB_NOOVERWRITE | DB_AUTO_COMMIT);
+	if (error_code != 0) {
+		char *msg;
+		switch (error_code) {
+		case DB_KEYEXIST:
+			msg = "Username already registered :(";
+			break;
+		default:
+			msg = "Unknown error while writing to database";
+			break;
+		}
+		report_msg(use_api, REGISTRATION_FAILED, msg);
+		return -1;
+	}
+
+	report_msg(use_api, REGISTRATION_SUCCESSFUL, "User registered, we did it reddit!");
+	return 0;
 }
 
 static int init_uuid(uuid *ret) {
@@ -119,4 +168,22 @@ static int init_uuid(uuid *ret) {
 	}
 
 	return 0;
+}
+
+static void report_msg(bool use_api, unsigned char code, char *elaboration) {
+	if (use_api) {
+		size_t elaboration_len;
+		if ((elaboration_len = strlen(elaboration)) > 0xff) {
+			fprintf(stderr, "Elaboration '%s' is too long!\n", elaboration);
+			return;
+		}
+		putchar(0x09);
+		putchar(code);
+		putchar((unsigned char) elaboration_len);
+		fputs(elaboration, stdout);
+		fflush(stdout);
+	}
+	else {
+		puts(elaboration);
+	}
 }

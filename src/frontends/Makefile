@@ -1,7 +1,7 @@
 SRC=$(wildcard *.c)
 OUT=$(subst .c,.exe,$(SRC))
 
-CFLAGS=-O2 -ggdb -Wall -Wextra -Wpedantic
+CFLAGS=-O2 -ggdb -Wall -Wextra -Wpedantic -Werror
 
 all: $(OUT)
 

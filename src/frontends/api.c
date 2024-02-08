@@ -82,7 +82,7 @@ static void start_client(int clientfd) {
 	}
 
 	if (read(clientfd, &cmd, 1) < 1) {
-		return;
+		exit(EXIT_FAILURE);
 	}
 
 	if (read_string(user, clientfd) ||
