@@ -109,6 +109,10 @@ int register_user(void *dbp, char *user, char *pass, bool use_api) {
 		return -1;
 	}
 
+	if (user[0] == '_') {
+		report_msg("Usernames beginning with an underscore are reserved");
+	}
+
 	pass_hashed = crypt_salt(pass);
 	if (pass_hashed == NULL) {
 		report_msg(use_api, REGISTRATION_FAILED, "Failed to hash password");
