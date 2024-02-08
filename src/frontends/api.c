@@ -96,11 +96,11 @@ static void start_client(int clientfd) {
 
 	switch (cmd) {
 	case LOGIN:
-		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-m",
+		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server",
 				NULL);
 		break;
 	case REGISTER:
-		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-r", "-m",
+		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-r",
 				NULL);
 		break;
 	}

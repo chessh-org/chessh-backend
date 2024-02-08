@@ -29,7 +29,6 @@ struct client_args {
 	char *dir;
 	char *user;
 	char *pass;
-	bool be_interactive;
 
 	int perft;
 	char *start_pos;
@@ -58,17 +57,17 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (args.register_user) {
-		return register_user(dbp, args.user, args.pass, !args.be_interactive);
+		return register_user(dbp, args.user, args.pass);
 	}
 
-	if (!user_is_valid(dbp, args.user, args.pass, true, !args.be_interactive)) {
+	if (!user_is_valid(dbp, args.user, args.pass)) {
 		return 1;
 	}
 
 	snprintf(sock_path, sizeof sock_path, "%s/matchmaker", args.dir);
 	sock_path[sizeof sock_path - 1] = '\0';
 
-	return run_client(sock_path, args.be_interactive);
+	return run_client(sock_path);
 }
 
 static void parse_args(int argc, char *argv[], struct client_args *ret) {
@@ -76,7 +75,6 @@ static void parse_args(int argc, char *argv[], struct client_args *ret) {
 	ret->perft = -1;
 	ret->start_pos = ret->start_sequence = NULL;
 	ret->autotest = false;
-	ret->be_interactive = true;
 	ret->register_user = false;
 
 	for (;;) {
@@ -111,9 +109,6 @@ static void parse_args(int argc, char *argv[], struct client_args *ret) {
 		case 'a':
 			ret->autotest = true;
 			break;
-		case 'm':
-			ret->be_interactive = false;
-			break;
 		case 'r':
 			ret->register_user = true;
 			break;
@@ -145,6 +140,5 @@ static void print_help(char *progname) {
 	puts("  -i [start]: Use [start] as the starting position for the perft test");
 	puts("  -s [sequence]: Run [sequence] before beginning the perft test");
 	puts("  -a: Produce a test output suitable for automatic testing with perftree");
-	puts("  -m: Machine mode, communicate through the chessh API");
 	puts("  -r: Don't play chess, register this user instead");
 }

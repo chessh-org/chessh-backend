@@ -1,7 +1,7 @@
 FROM debian:stable-slim
 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y build-essential libncursesw5-dev libreadline-dev pkg-config openssh-server supervisor telnetd supervisor telnetd libcrypt1 libdb-dev
+RUN apt-get install -y build-essential pkg-config supervisor libcrypt1 libdb-dev
 
 COPY . /chessh
 

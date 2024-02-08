@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * */
 
+/* Originally, the API, telnet, and ssh were all hosted on the same container.
+ * I've split them off into microservices, but this API remains. */
+
 #ifndef HAVE_CLIENT__FRONTEND
 #define HAVE_CLIENT__FRONTEND
 
@@ -37,8 +40,6 @@ struct frontend {
 	void *aux;
 };
 
-extern struct frontend *new_curses_frontend(wchar_t **piecesyms_white, wchar_t **piecesyms_black);
-extern struct frontend *new_text_frontend(wchar_t **piecesyms_white, wchar_t **piecesyms_black);
 extern struct frontend *new_api_frontend(void);
 extern char *frontend_strerror(int code);
 

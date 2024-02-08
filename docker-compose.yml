@@ -4,8 +4,6 @@ services:
     image: natechoe/chessh
     container_name: chessh
     ports:
-      - "2222:22"
-      - "2323:23"
       - "1475:1475"
     volumes:
       - ./chessh-data:/chessh-data

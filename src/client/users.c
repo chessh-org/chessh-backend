@@ -48,7 +48,7 @@ struct chessh_user {
 
 static int init_uuid(uuid *ret);
 
-static void report_msg(bool use_api, unsigned char code, char *elaboration);
+static void report_msg(unsigned char code, char *elaboration);
 
 #define REGISTRATION_SUCCESSFUL 0x00
 #define REGISTRATION_FAILED 0x01
@@ -94,7 +94,7 @@ error1:
 	init_uuid(NULL);
 }
 
-int register_user(void *dbp, char *user, char *pass, bool use_api) {
+int register_user(void *dbp, char *user, char *pass) {
 	struct chessh_db *db;
 	DBT key, value;
 	struct chessh_user new_user;
@@ -105,22 +105,23 @@ int register_user(void *dbp, char *user, char *pass, bool use_api) {
 	user_len = strlen(user);
 
 	if (user_len > 0xff) {
-		report_msg(use_api, REGISTRATION_FAILED, "Username is too long (max len: 255)");
+		report_msg(REGISTRATION_FAILED, "Username is too long (max len: 255)");
 		return -1;
 	}
 
 	if (user[0] == '_') {
-		report_msg("Usernames beginning with an underscore are reserved");
+		report_msg(REGISTRATION_FAILED, "Usernames beginning with an underscore are reserved");
+		return -1;
 	}
 
 	pass_hashed = crypt_salt(pass);
 	if (pass_hashed == NULL) {
-		report_msg(use_api, REGISTRATION_FAILED, "Failed to hash password");
+		report_msg(REGISTRATION_FAILED, "Failed to hash password");
 		return -1;
 	}
 	pass_len = strlen(pass_hashed);
 	if (pass_len + 1 >= sizeof new_user.pass) {
-		report_msg(use_api, REGISTRATION_FAILED, "Hashed password too long? (internal server error)");
+		report_msg(REGISTRATION_FAILED, "Hashed password too long? (internal server error)");
 		return -1;
 	}
 
@@ -148,16 +149,15 @@ int register_user(void *dbp, char *user, char *pass, bool use_api) {
 			msg = "Unknown error while writing to database";
 			break;
 		}
-		report_msg(use_api, REGISTRATION_FAILED, msg);
+		report_msg(REGISTRATION_FAILED, msg);
 		return -1;
 	}
 
-	report_msg(use_api, REGISTRATION_SUCCESSFUL, "User registered, we did it reddit!");
+	report_msg(REGISTRATION_SUCCESSFUL, "User registered, we did it reddit!");
 	return 0;
 }
 
-bool user_is_valid(void *dbp, char *user, char *pass,
-		bool report, bool use_api) {
+bool user_is_valid(void *dbp, char *user, char *pass) {
 	struct chessh_db *db;
 	struct chessh_user user_data;
 	DBT key, data;
@@ -175,28 +175,24 @@ bool user_is_valid(void *dbp, char *user, char *pass,
 	data.ulen = sizeof user_data;
 	data.flags = DB_DBT_USERMEM;
 	if ((code = db->user_dbp->get(db->user_dbp, NULL, &key, &data, 0)) != 0) {
-		if (report) {
-			char *msg;
-			if (code == DB_NOTFOUND) {
-				msg = "Couldn't find a user with that name";
-			}
-			else {
-				msg = "Failed to retrieve user from database";
-			}
-			report_msg(use_api, AUTH_FAILED, msg);
+		char *msg;
+		if (code == DB_NOTFOUND) {
+			msg = "Couldn't find a user with that name";
 		}
+		else {
+			msg = "Failed to retrieve user from database";
+		}
+		report_msg(AUTH_FAILED, msg);
 		return false;
 	}
 
 	pass_encrypted = crypt(pass, user_data.pass);
 	if (strcmp(pass_encrypted, user_data.pass) != false) {
-		if (report) {
-			report_msg(use_api, AUTH_FAILED, "Incorrect username/password");
-		}
+		report_msg(AUTH_FAILED, "Incorrect username/password");
 		return false;
 	}
 
-	report_msg(use_api, AUTH_SUCCESSFUL, "Authentication successful, we're in");
+	report_msg(AUTH_SUCCESSFUL, "Authentication successful, we're in");
 	return true;
 }
 
@@ -219,20 +215,15 @@ static int init_uuid(uuid *ret) {
 	return 0;
 }
 
-static void report_msg(bool use_api, unsigned char code, char *elaboration) {
-	if (use_api) {
-		size_t elaboration_len;
-		if ((elaboration_len = strlen(elaboration)) > 0xff) {
-			fprintf(stderr, "Elaboration '%s' is too long!\n", elaboration);
-			return;
-		}
-		putchar(0x09);
-		putchar(code);
-		putchar((unsigned char) elaboration_len);
-		fputs(elaboration, stdout);
-		fflush(stdout);
+static void report_msg(unsigned char code, char *elaboration) {
+	size_t elaboration_len;
+	if ((elaboration_len = strlen(elaboration)) > 0xff) {
+		fprintf(stderr, "Elaboration '%s' is too long!\n", elaboration);
+		return;
 	}
-	else {
-		puts(elaboration);
-	}
+	putchar(0x09);
+	putchar(code);
+	putchar((unsigned char) elaboration_len);
+	fputs(elaboration, stdout);
+	fflush(stdout);
 }

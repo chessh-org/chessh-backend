@@ -2,8 +2,7 @@
 
 if ! [ -d /chessh-data/environment ] ; then
 	mkdir /chessh-data/environment
+	chown chessh:chessh /chessh-data
 fi
 
-chown -R chessh:chessh /chessh-data
-
-exec /usr/bin/supervisord
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

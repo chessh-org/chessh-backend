@@ -11,22 +11,27 @@ HEADERS_CLIENT = $(wildcard src/include/client/*.h)
 
 LIBS_SHARED =
 LIBS_DAEMON =
-LIBS_CLIENT = readline ncursesw
+LIBS_CLIENT =
 
 LDFLAGS_SHARED =
 LDFLAGS_DAEMON =
-LDFLAGS_CLIENT = -lcrypt
+LDFLAGS_CLIENT =
+LDFLAGS_SHARED +=
+LDFLAGS_DAEMON +=
+LDFLAGS_CLIENT += -lcrypt -ldb
 #LDFLAGS_SHARED += $(shell pkg-config --libs $(LIBS_SHARED))
 #LDFLAGS_DAEMON += $(shell pkg-config --libs $(LIBS_DAEMON))
-LDFLAGS_CLIENT += $(shell pkg-config --libs $(LIBS_CLIENT)) -ldb
+#LDFLAGS_CLIENT += $(shell pkg-config --libs $(LIBS_CLIENT))
 
 CFLAGS_SHARED = -ggdb -O2 -pipe -Wall -Wpedantic -Wextra -Werror -Wint-conversion
 CFLAGS_DAEMON =
 CFLAGS_CLIENT =
-#CFLAGS_SHARED += $(shell pkg-config --cflags $(LIBS_SHARED)) -Isrc/include
 CFLAGS_SHARED += -Isrc/include
+#CFLAGS_DAEMON +=
+#CFLAGS_CLIENT +=
+#CFLAGS_SHARED += $(shell pkg-config --cflags $(LIBS_SHARED)) -Isrc/include
 #CFLAGS_DAEMON += $(shell pkg-config --cflags $(LIBS_DAEMON))
-CFLAGS_CLIENT += $(shell pkg-config --cflags $(LIBS_CLIENT))
+#CFLAGS_CLIENT += $(shell pkg-config --cflags $(LIBS_CLIENT))
 
 INSTALLDIR := /usr/bin/
 
