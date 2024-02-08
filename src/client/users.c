@@ -18,6 +18,7 @@
 #include <db.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <util.h>
 #include <client/crypt.h>
@@ -51,6 +52,8 @@ static void report_msg(bool use_api, unsigned char code, char *elaboration);
 
 #define REGISTRATION_SUCCESSFUL 0x00
 #define REGISTRATION_FAILED 0x01
+#define AUTH_SUCCESSFUL 0x80
+#define AUTH_FAILED 0x81
 
 void *init_user_db() {
 	struct chessh_db *ret;
@@ -98,8 +101,6 @@ int register_user(void *dbp, char *user, char *pass, bool use_api) {
 	size_t user_len, pass_len;
 	char *pass_hashed;
 	int error_code;
-
-	UNUSED(use_api);
 
 	user_len = strlen(user);
 
@@ -149,6 +150,50 @@ int register_user(void *dbp, char *user, char *pass, bool use_api) {
 
 	report_msg(use_api, REGISTRATION_SUCCESSFUL, "User registered, we did it reddit!");
 	return 0;
+}
+
+bool user_is_valid(void *dbp, char *user, char *pass,
+		bool report, bool use_api) {
+	struct chessh_db *db;
+	struct chessh_user user_data;
+	DBT key, data;
+	char *pass_encrypted;
+	int code;
+
+	db = (struct chessh_db *) dbp;
+	memset(&user_data, 0, sizeof user_data);
+	memset(&key, 0, sizeof key);
+	memset(&data, 0, sizeof data);
+
+	key.data = user;
+	key.size = strlen(user);
+	data.data = &user_data;
+	data.ulen = sizeof user_data;
+	data.flags = DB_DBT_USERMEM;
+	if ((code = db->user_dbp->get(db->user_dbp, NULL, &key, &data, 0)) != 0) {
+		if (report) {
+			char *msg;
+			if (code == DB_NOTFOUND) {
+				msg = "Couldn't find a user with that name";
+			}
+			else {
+				msg = "Failed to retrieve user from database";
+			}
+			report_msg(use_api, AUTH_FAILED, msg);
+		}
+		return false;
+	}
+
+	pass_encrypted = crypt(pass, user_data.pass);
+	if (strcmp(pass_encrypted, user_data.pass) != false) {
+		if (report) {
+			report_msg(use_api, AUTH_FAILED, "Incorrect username/password");
+		}
+		return false;
+	}
+
+	report_msg(use_api, AUTH_SUCCESSFUL, "Authentication successful, we're in");
+	return true;
 }
 
 static int init_uuid(uuid *ret) {

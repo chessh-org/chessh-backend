@@ -49,6 +49,8 @@
 #define CMD_BOARD_INFO 0x05
 #define CMD_MOVE_INFO 0x06
 #define CMD_NOTIFY 0x07
+#define CMD_REGISTER 0x08
+#define CMD_AUTH_RESPONSE 0x09
 
 static char *get_move(void *aux, struct game *game, enum player player);
 static void report_error(void *aux, int code);

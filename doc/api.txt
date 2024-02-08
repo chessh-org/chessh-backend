@@ -43,7 +43,7 @@ Part 2: Constants
     0x06  MOVE_INFO
     0x07  NOTIFY
     0x08  REGISTER
-    0x09  REGISTER_RESPONSE
+    0x09  AUTH_RESPONSE
 
   Notifications can be one of the following values
   
@@ -58,12 +58,14 @@ Part 2: Constants
     0x06  illegal move
     0x07  move needs a promotion
 
-  REGISTER_RESPONSE sends one of the following codes
+  AUTH_RESPONSE sends one of the following codes
 
     BYTE  MEANING
     -------------
     0x00  Registration successful
     0x01  Registration failed
+    0x80  Authentication successful
+    0x81  Authentication failed
 
 Part 3: Data structures
 ---

@@ -100,7 +100,7 @@ static void start_client(int clientfd) {
 				NULL);
 		break;
 	case REGISTER:
-		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-r",
+		execl("/chessh/build/chessh-client", "chessh-client", "-u", user, "-p", pass, "-d", "/chessh-server", "-r", "-m",
 				NULL);
 		break;
 	}

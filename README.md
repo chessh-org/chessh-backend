@@ -24,10 +24,12 @@ and port numbers for that reason. To run this program, just run
     ./build.sh
     docker compose up
 
-## Related projects
+## Acknowledgements/Related Projects
 
 I'm using [perftree](https://github.com/agausmann/perftree) for debugging. This
 project would have been absolutely impossible without it.
 
 I'm also using [Berkeley DB](https://en.wikipedia.org/wiki/Berkeley_DB) to
-manage users.
+manage users. I've been heavily referencing [this
+website](https://web.mit.edu/Ghudson/dev/third/rpm/db/docs/api_c/c_index.html)
+hosted by MIT containing Berkeley DB documentation.

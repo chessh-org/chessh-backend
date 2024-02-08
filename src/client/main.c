@@ -45,6 +45,7 @@ static void print_help(char *progname);
 int main(int argc, char *argv[]) {
 	struct client_args args;
 	char sock_path[4096];
+	void *dbp;
 
 	parse_args(argc, argv, &args);
 
@@ -52,12 +53,16 @@ int main(int argc, char *argv[]) {
 		return run_perft(args.perft, args.start_pos, args.start_sequence, args.autotest);
 	}
 
+	if ((dbp = init_user_db()) == NULL) {
+		return 1;
+	}
+
 	if (args.register_user) {
-		void *dbp;
-		if ((dbp = init_user_db()) == NULL) {
-			return 1;
-		}
-		return register_user(dbp, args.user, args.pass, args.be_interactive);
+		return register_user(dbp, args.user, args.pass, !args.be_interactive);
+	}
+
+	if (!user_is_valid(dbp, args.user, args.pass, true, !args.be_interactive)) {
+		return 1;
 	}
 
 	snprintf(sock_path, sizeof sock_path, "%s/matchmaker", args.dir);

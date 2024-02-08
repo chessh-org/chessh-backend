@@ -21,6 +21,8 @@
 #include <stdbool.h>
 
 extern void *init_user_db();
-extern int register_user(void *db, char *user, char *pass, bool use_api);
+extern int register_user(void *dbp, char *user, char *pass, bool use_api);
+extern bool user_is_valid(void *dbp, char *user, char *pass,
+		bool report, bool use_api);
 
 #endif
