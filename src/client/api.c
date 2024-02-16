@@ -139,7 +139,7 @@ static void report_event(int code, void *aux, struct game *game, void *data) {
 
 	switch (code) {
 	case EVENT_OP_MOVE:
-		putchar(CMD_MOVE_INFO);
+		putchar(CMD_MAKE_MOVE);
 		print_move((struct move *) data);
 		break;
 	}
