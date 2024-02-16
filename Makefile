@@ -23,7 +23,7 @@ LDFLAGS_CLIENT += -lcrypt -ldb
 #LDFLAGS_DAEMON += $(shell pkg-config --libs $(LIBS_DAEMON))
 #LDFLAGS_CLIENT += $(shell pkg-config --libs $(LIBS_CLIENT))
 
-CFLAGS_SHARED = -ggdb -O2 -pipe -Wall -Wpedantic -Wextra -Werror -Wint-conversion
+CFLAGS_SHARED = -ggdb -O2 -pipe -Wall -Wpedantic -Wextra -Wimplicit-fallthrough=2 -Werror -Wint-conversion
 CFLAGS_DAEMON =
 CFLAGS_CLIENT =
 CFLAGS_SHARED += -Isrc/include
